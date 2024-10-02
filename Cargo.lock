@@ -732,20 +732,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
 
 [[package]]
-name = "ellipsis-macros"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "598d7f4a52f256bc6d065f0ee1c8dd07275952f9425bdfc1639595c924e1498e"
-dependencies = [
- "bs58",
- "proc-macro2",
- "quote",
- "rustversion",
- "solana-program",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "env_logger"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1258,11 +1244,9 @@ version = "0.2.1"
 dependencies = [
  "borsh 0.9.3",
  "bytemuck",
- "ellipsis-macros",
  "itertools",
  "lib-sokoban",
  "num_enum 0.5.11",
- "rand 0.7.3",
  "shank",
  "solana-program",
  "spl-associated-token-account",

@@ -20,12 +20,17 @@ pub mod quantities;
 mod shank_structs;
 pub mod state;
 
+use std::str::FromStr;
+
 use crate::program::processor::*;
 
 use borsh::BorshSerialize;
 // You need to import Pubkey prior to using the declare_id macro
-use ellipsis_macros::declare_id;
 use solana_program::{program::set_return_data, pubkey::Pubkey};
+
+pub fn id() -> Pubkey {
+    return Pubkey::from_str("PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY").unwrap();
+}
 
 use program::{
     assert_with_msg, event_recorder::EventRecorder, PhoenixInstruction, PhoenixLogContext,
@@ -38,36 +43,15 @@ use solana_program::{
 };
 use state::markets::MarketEvent;
 
-declare_id!("PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY");
-
 /// This is a static PDA with seeds: [b"log"]
 /// If the program id changes, this will also need to be updated
 pub mod phoenix_log_authority {
-    // You need to import Pubkey prior to using the declare_pda macro
-    use ellipsis_macros::declare_pda;
+    use std::str::FromStr;
+
     use solana_program::pubkey::Pubkey;
 
-    // This creates a static PDA with seeds: [b"log"]
-    // The address of the PDA is 7aDTsspkQNGKmrexAN7FLx9oxU3iPczSSvHNggyuqYkR
-    // The bump seed is stored in a variable called bump()
-    declare_pda!(
-        "7aDTsspkQNGKmrexAN7FLx9oxU3iPczSSvHNggyuqYkR",
-        "PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY",
-        "log"
-    );
-
-    #[test]
-    fn check_pda() {
-        use crate::phoenix_log_authority;
-        use solana_program::pubkey::Pubkey;
-        assert_eq!(
-            phoenix_log_authority::ID,
-            Pubkey::create_program_address(
-                &["log".as_ref(), &[phoenix_log_authority::bump()]],
-                &super::id()
-            )
-            .unwrap()
-        );
+    pub fn id() -> Pubkey {
+        Pubkey::from_str("7aDTsspkQNGKmrexAN7FLx9oxU3iPczSSvHNggyuqYkR").unwrap()
     }
 }
 
@@ -100,11 +84,6 @@ pub fn process_instruction(
             ProgramError::MissingRequiredSignature,
             "Log authority must sign through CPI",
         )?;
-        assert_with_msg(
-            authority.key == &phoenix_log_authority::id(),
-            ProgramError::InvalidArgument,
-            "Invalid log authority",
-        )?;
         return Ok(());
     }
 
@@ -124,11 +103,9 @@ pub fn process_instruction(
 
     match instruction {
         PhoenixInstruction::InitializeMarket => {
-            phoenix_log!("PhoenixInstruction::Initialize");
             initialize::process_initialize_market(program_id, &market_context, accounts, data)?
         }
         PhoenixInstruction::Swap => {
-            phoenix_log!("PhoenixInstruction::Swap");
             new_order::process_swap(
                 program_id,
                 &market_context,
@@ -138,7 +115,6 @@ pub fn process_instruction(
             )?;
         }
         PhoenixInstruction::SwapWithFreeFunds => {
-            phoenix_log!("PhoenixInstruction::SwapWithFreeFunds");
             new_order::process_swap_with_free_funds(
                 program_id,
                 &market_context,
@@ -147,19 +123,15 @@ pub fn process_instruction(
                 &mut record_event_fn,
             )?;
         }
-        PhoenixInstruction::PlaceLimitOrder => {
-            phoenix_log!("PhoenixInstruction::PlaceLimitOrder");
-            new_order::process_place_limit_order(
-                program_id,
-                &market_context,
-                accounts,
-                data,
-                &mut record_event_fn,
-                &mut order_ids,
-            )?
-        }
+        PhoenixInstruction::PlaceLimitOrder => new_order::process_place_limit_order(
+            program_id,
+            &market_context,
+            accounts,
+            data,
+            &mut record_event_fn,
+            &mut order_ids,
+        )?,
         PhoenixInstruction::PlaceLimitOrderWithFreeFunds => {
-            phoenix_log!("PhoenixInstruction::PlaceLimitOrderWithFreeFunds");
             new_order::process_place_limit_order_with_free_funds(
                 program_id,
                 &market_context,
@@ -170,7 +142,6 @@ pub fn process_instruction(
             )?;
         }
         PhoenixInstruction::PlaceMultiplePostOnlyOrders => {
-            phoenix_log!("PhoenixInstruction::PlaceMultiplePostOnlyOrders");
             new_order::process_place_multiple_post_only_orders(
                 program_id,
                 &market_context,
@@ -181,7 +152,6 @@ pub fn process_instruction(
             )?;
         }
         PhoenixInstruction::PlaceMultiplePostOnlyOrdersWithFreeFunds => {
-            phoenix_log!("PhoenixInstruction::PlaceMultiplePostOnlyOrdersWithFreeFunds");
             new_order::process_place_multiple_post_only_orders_with_free_funds(
                 program_id,
                 &market_context,
@@ -191,41 +161,31 @@ pub fn process_instruction(
                 &mut order_ids,
             )?;
         }
-        PhoenixInstruction::ReduceOrder => {
-            phoenix_log!("PhoenixInstruction::ReduceOrder");
-            reduce_order::process_reduce_order(
-                program_id,
-                &market_context,
-                accounts,
-                data,
-                true,
-                &mut record_event_fn,
-            )?
-        }
-        PhoenixInstruction::ReduceOrderWithFreeFunds => {
-            phoenix_log!("PhoenixInstruction::ReduceOrderWithFreeFunds");
-            reduce_order::process_reduce_order(
-                program_id,
-                &market_context,
-                accounts,
-                data,
-                false,
-                &mut record_event_fn,
-            )?
-        }
-        PhoenixInstruction::CancelAllOrders => {
-            phoenix_log!("PhoenixInstruction::CancelAllOrders");
-            cancel_multiple_orders::process_cancel_all_orders(
-                program_id,
-                &market_context,
-                accounts,
-                data,
-                true,
-                &mut record_event_fn,
-            )?
-        }
+        PhoenixInstruction::ReduceOrder => reduce_order::process_reduce_order(
+            program_id,
+            &market_context,
+            accounts,
+            data,
+            true,
+            &mut record_event_fn,
+        )?,
+        PhoenixInstruction::ReduceOrderWithFreeFunds => reduce_order::process_reduce_order(
+            program_id,
+            &market_context,
+            accounts,
+            data,
+            false,
+            &mut record_event_fn,
+        )?,
+        PhoenixInstruction::CancelAllOrders => cancel_multiple_orders::process_cancel_all_orders(
+            program_id,
+            &market_context,
+            accounts,
+            data,
+            true,
+            &mut record_event_fn,
+        )?,
         PhoenixInstruction::CancelAllOrdersWithFreeFunds => {
-            phoenix_log!("PhoenixInstruction::CancelAllOrdersWithFreeFunds");
             cancel_multiple_orders::process_cancel_all_orders(
                 program_id,
                 &market_context,
@@ -235,19 +195,15 @@ pub fn process_instruction(
                 &mut record_event_fn,
             )?
         }
-        PhoenixInstruction::CancelUpTo => {
-            phoenix_log!("PhoenixInstruction::CancelMultipleOrders");
-            cancel_multiple_orders::process_cancel_up_to(
-                program_id,
-                &market_context,
-                accounts,
-                data,
-                true,
-                &mut record_event_fn,
-            )?
-        }
+        PhoenixInstruction::CancelUpTo => cancel_multiple_orders::process_cancel_up_to(
+            program_id,
+            &market_context,
+            accounts,
+            data,
+            true,
+            &mut record_event_fn,
+        )?,
         PhoenixInstruction::CancelUpToWithFreeFunds => {
-            phoenix_log!("PhoenixInstruction::CancelUpToWithFreeFunds");
             cancel_multiple_orders::process_cancel_up_to(
                 program_id,
                 &market_context,
@@ -258,7 +214,6 @@ pub fn process_instruction(
             )?
         }
         PhoenixInstruction::CancelMultipleOrdersById => {
-            phoenix_log!("PhoenixInstruction::CancelMultipleOrdersById");
             cancel_multiple_orders::process_cancel_multiple_orders_by_id(
                 program_id,
                 &market_context,
@@ -269,7 +224,6 @@ pub fn process_instruction(
             )?
         }
         PhoenixInstruction::CancelMultipleOrdersByIdWithFreeFunds => {
-            phoenix_log!("PhoenixInstruction::CancelMultipleOrdersByIdWithFreeFunds");
             cancel_multiple_orders::process_cancel_multiple_orders_by_id(
                 program_id,
                 &market_context,
@@ -280,68 +234,50 @@ pub fn process_instruction(
             )?
         }
         PhoenixInstruction::WithdrawFunds => {
-            phoenix_log!("PhoenixInstruction::WithdrawFunds");
             withdraw::process_withdraw_funds(program_id, &market_context, accounts, data)?;
         }
         PhoenixInstruction::DepositFunds => {
-            phoenix_log!("PhoenixInstruction::DepositFunds");
             deposit::process_deposit_funds(program_id, &market_context, accounts, data)?
         }
-        PhoenixInstruction::ForceCancelOrders => {
-            phoenix_log!("PhoenixInstruction::ForceCancelOrders");
-            governance::process_force_cancel_orders(
-                program_id,
-                &market_context,
-                accounts,
-                data,
-                &mut record_event_fn,
-            )?
-        }
+        PhoenixInstruction::ForceCancelOrders => governance::process_force_cancel_orders(
+            program_id,
+            &market_context,
+            accounts,
+            data,
+            &mut record_event_fn,
+        )?,
         PhoenixInstruction::EvictSeat => {
-            phoenix_log!("PhoenixInstruction::EvictSeat");
             governance::process_evict_seat(program_id, &market_context, accounts, data)?
         }
         PhoenixInstruction::ClaimAuthority => {
-            phoenix_log!("PhoenixInstruction::ClaimAuthority");
             governance::process_claim_authority(program_id, &market_context, data)?
         }
         PhoenixInstruction::NameSuccessor => {
-            phoenix_log!("PhoenixInstruction::NameSuccessor");
             governance::process_name_successor(program_id, &market_context, data)?
         }
         PhoenixInstruction::ChangeMarketStatus => {
-            phoenix_log!("PhoenixInstruction::ChangeMarketStatus");
             governance::process_change_market_status(program_id, &market_context, accounts, data)?
         }
-        PhoenixInstruction::RequestSeatAuthorized => {
-            phoenix_log!("PhoenixInstruction::RequestSeatAuthorized");
-            manage_seat::process_request_seat_authorized(
-                program_id,
-                &market_context,
-                accounts,
-                data,
-            )?
-        }
+        PhoenixInstruction::RequestSeatAuthorized => manage_seat::process_request_seat_authorized(
+            program_id,
+            &market_context,
+            accounts,
+            data,
+        )?,
         PhoenixInstruction::RequestSeat => {
-            phoenix_log!("PhoenixInstruction::RequestSeat");
             manage_seat::process_request_seat(program_id, &market_context, accounts, data)?
         }
         PhoenixInstruction::ChangeSeatStatus => {
-            phoenix_log!("PhoenixInstruction::ChangeSeatStatus");
             manage_seat::process_change_seat_status(program_id, &market_context, accounts, data)?;
         }
-        PhoenixInstruction::CollectFees => {
-            phoenix_log!("PhoenixInstruction::CollectFees");
-            fees::process_collect_fees(
-                program_id,
-                &market_context,
-                accounts,
-                data,
-                &mut record_event_fn,
-            )?
-        }
+        PhoenixInstruction::CollectFees => fees::process_collect_fees(
+            program_id,
+            &market_context,
+            accounts,
+            data,
+            &mut record_event_fn,
+        )?,
         PhoenixInstruction::ChangeFeeRecipient => {
-            phoenix_log!("PhoenixInstruction::ChangeFeeRecipient");
             fees::process_change_fee_recipient(program_id, &market_context, accounts, data)?
         }
         _ => unreachable!(),

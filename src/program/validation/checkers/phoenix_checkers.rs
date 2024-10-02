@@ -27,7 +27,7 @@ impl<'a, 'info> MarketAccountInfo<'a, 'info> {
         info: &'a AccountInfo<'info>,
     ) -> Result<MarketAccountInfo<'a, 'info>, ProgramError> {
         assert_with_msg(
-            info.owner == &crate::ID,
+            info.owner == &crate::id(),
             ProgramError::IllegalOwner,
             "Market must be owned by the Phoenix program",
         )?;
@@ -115,7 +115,7 @@ impl<'a, 'info> MarketAccountInfo<'a, 'info> {
         let header =
             MarketHeader::load_bytes(header_bytes).ok_or(ProgramError::InvalidAccountData)?;
         assert_with_msg(
-            info.owner == &crate::ID,
+            info.owner == &crate::id(),
             ProgramError::IllegalOwner,
             "Market must be owned by the Phoenix program",
         )?;
@@ -179,7 +179,7 @@ impl<'a, 'info> SeatAccountInfo<'a, 'info> {
     ) -> Result<SeatAccountInfo<'a, 'info>, ProgramError> {
         let (seat_address, _) = get_seat_address(market, trader);
         assert_with_msg(
-            info.owner == &crate::ID,
+            info.owner == &crate::id(),
             ProgramError::IllegalOwner,
             "Seat must be owned by the Phoenix program",
         )?;
@@ -235,7 +235,7 @@ impl<'a, 'info> SeatAccountInfo<'a, 'info> {
             "Market on seat does not match market in instruction",
         )?;
         assert_with_msg(
-            info.owner == &crate::ID,
+            info.owner == &crate::id(),
             ProgramError::IllegalOwner,
             "Seat must be owned by the Phoenix program",
         )?;

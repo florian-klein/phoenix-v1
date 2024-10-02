@@ -29,11 +29,11 @@ use solana_program::{
 use static_assertions::const_assert_eq;
 
 pub fn get_vault_address(market: &Pubkey, mint: &Pubkey) -> (Pubkey, u8) {
-    Pubkey::find_program_address(&[b"vault", market.as_ref(), mint.as_ref()], &crate::ID)
+    Pubkey::find_program_address(&[b"vault", market.as_ref(), mint.as_ref()], &crate::id())
 }
 
 pub fn get_seat_address(market: &Pubkey, trader: &Pubkey) -> (Pubkey, u8) {
-    Pubkey::find_program_address(&[b"seat", market.as_ref(), trader.as_ref()], &crate::ID)
+    Pubkey::find_program_address(&[b"seat", market.as_ref(), trader.as_ref()], &crate::id())
 }
 
 pub(crate) struct PhoenixLogContext<'a, 'info> {

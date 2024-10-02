@@ -27,8 +27,8 @@ overflow-checks = true
 
 [dependencies]
 shank = "0.0.12"
-spl-token = { version = "=3.5.0", features = ["no-entrypoint"] }
-spl-associated-token-account = { version = "2.3.0", features = [ "no-entrypoint" ] } 
+spl-token = { version = ">=3.5.0", features = ["no-entrypoint"] }
+spl-associated-token-account = { version = ">=2.3.0", features = [ "no-entrypoint" ] } 
 solana-program = "1.18.23"
 borsh = "0.9.3"
 bytemuck = "1.18.0"
@@ -36,8 +36,4 @@ lib-sokoban = "0.3.3"
 num_enum = "0.5.11"
 itertools = "0.10.5"
 thiserror = "1.0.64"
-ellipsis-macros = "0.1.1" 
 static_assertions = "1.1.0"
-
-[dev-dependencies]
-rand = "0.7.3"

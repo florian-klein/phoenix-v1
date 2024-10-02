@@ -19,14 +19,11 @@ use super::status::{MarketStatus, SeatApprovalStatus};
 pub fn get_discriminant<T>() -> Result<u64, ProgramError> {
     let type_name = std::any::type_name::<T>();
     let discriminant = u64::from_le_bytes(
-        keccak::hashv(&[crate::ID.as_ref(), type_name.as_bytes()]).as_ref()[..8]
+        keccak::hashv(&[crate::id().as_ref(), type_name.as_bytes()]).as_ref()[..8]
             .try_into()
-            .map_err(|_| {
-                phoenix_log!("Failed to convert discriminant hash to u64");
-                ProgramError::InvalidAccountData
-            })?,
+            .map_err(|_| ProgramError::InvalidAccountData)?,
     );
-    phoenix_log!("Discriminant for {} is {}", type_name, discriminant);
+
     Ok(discriminant)
 }
 

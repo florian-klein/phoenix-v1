@@ -5,7 +5,6 @@ use solana_program::{
     clock::Clock,
     entrypoint::ProgramResult,
     instruction::{AccountMeta, Instruction},
-    program::invoke_signed,
     program_error::ProgramError,
     pubkey::Pubkey,
     sysvar::Sysvar,
@@ -130,14 +129,6 @@ impl<'info> EventRecorder<'info> {
         // from the client side. "number of events in batch"
         self.log_instruction.data[(HEADER_LEN - 2)..HEADER_LEN]
             .copy_from_slice(&batch_size.to_le_bytes());
-        invoke_signed(
-            &self.log_instruction,
-            &[
-                self.phoenix_program.as_ref().clone(),
-                self.log_authority.as_ref().clone(),
-            ],
-            &[&[b"log", &[phoenix_log_authority::bump()]]],
-        )?;
         self.log_instruction.data.drain(HEADER_LEN..);
         self.state_tracker.process_events();
         Ok(())
