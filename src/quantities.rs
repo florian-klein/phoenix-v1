@@ -166,16 +166,6 @@ macro_rules! allow_multiply {
             type Output = $type_2;
             #[track_caller]
             fn div(self, other: $type_1) -> $type_2 {
-                if self.inner % other.inner != 0 {
-                    let caller = std::panic::Location::caller();
-
-                    phoenix_log!(
-                        "WARNING: Expected clean division, but received {:?} / {:?}. Caller: {:?}",
-                        self,
-                        other,
-                        caller
-                    );
-                }
                 $type_2::new(self.inner / other.inner)
             }
         }
@@ -184,16 +174,6 @@ macro_rules! allow_multiply {
             type Output = $type_1;
             #[track_caller]
             fn div(self, other: $type_2) -> $type_1 {
-                if self.inner % other.inner != 0 {
-                    let caller = std::panic::Location::caller();
-
-                    phoenix_log!(
-                        "WARNING: Expected clean division, but received {:?} / {:?}. Caller: {:?}",
-                        self,
-                        other,
-                        caller
-                    );
-                }
                 $type_1::new(self.inner / other.inner)
             }
         }

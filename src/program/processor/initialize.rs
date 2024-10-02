@@ -132,17 +132,6 @@ pub(crate) fn process_initialize_market<'a, 'info>(
     let tick_size_in_quote_atoms_per_base_unit =
         quote_lot_size * tick_size_in_quote_lots_per_base_unit;
 
-    phoenix_log!(
-        "Market parameters:
-        num_quote_lots_per_quote_unit: {}, 
-        tick_size_in_quote_lots_per_base_unit: {}, 
-        num_base_lots_per_base_unit: {},
-        tick_size_in_quote_atoms_per_base_unit: {},",
-        num_quote_lots_per_quote_unit,
-        tick_size_in_quote_lots_per_base_unit,
-        num_base_lots_per_base_unit,
-        tick_size_in_quote_atoms_per_base_unit,
-    );
     // A trade of 1 base lot at the minimum tick price of 1 must result in an integer number of quote lots
     // Suppose there are T quote lots per tick and there are B base lots per base unit.
     // At a price of 1 tick per base unit, for a trade of size 1 base lot, the resulting quote lots N must be an integer

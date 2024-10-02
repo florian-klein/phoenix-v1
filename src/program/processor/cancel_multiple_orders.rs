@@ -161,7 +161,6 @@ pub(crate) fn process_cancel_multiple_orders_by_id<'a, 'info>(
 
     let cancel_params = CancelMultipleOrdersByIdParams::try_from_slice(data)?;
     if cancel_params.orders.is_empty() {
-        phoenix_log!("No orders to cancel");
         return Ok(());
     }
 

@@ -2,8 +2,7 @@ use std::mem::size_of;
 
 use crate::{
     program::{
-        assert_with_msg, load_with_dispatch_mut,
-        token_utils::{get_decimal_string, maybe_invoke_withdraw},
+        assert_with_msg, load_with_dispatch_mut, token_utils::maybe_invoke_withdraw,
         ChangeFeeRecipientContext, CollectFeesContext, MarketHeader, PhoenixMarketContext,
     },
     quantities::{QuoteLots, WrapperU64},
@@ -40,10 +39,6 @@ pub(crate) fn process_collect_fees<'a, 'info>(
 
     let header = market_info.get_header()?;
     let quote_atoms_collected = num_quote_lots_out * header.get_quote_lot_size();
-    phoenix_log!(
-        "Collected {} in fees",
-        get_decimal_string(quote_atoms_collected.as_u64(), header.quote_params.decimals)
-    );
 
     maybe_invoke_withdraw(
         market_info.key,

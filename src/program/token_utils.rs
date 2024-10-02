@@ -1,8 +1,3 @@
-use std::{
-    fmt::Display,
-    ops::{Div, Rem},
-};
-
 use solana_program::{
     account_info::AccountInfo,
     entrypoint::ProgramResult,
@@ -136,19 +131,4 @@ pub(crate) fn try_deposit<'a, 'info>(
         )?;
     }
     Ok(())
-}
-
-pub fn get_decimal_string<N: Display + Div + Rem + Copy + TryFrom<u64>>(
-    amount: N,
-    decimals: u32,
-) -> String
-where
-    <N as Rem>::Output: std::fmt::Display,
-    <N as Div>::Output: std::fmt::Display,
-    <N as TryFrom<u64>>::Error: std::fmt::Debug,
-{
-    let scale = N::try_from(10_u64.pow(decimals)).unwrap();
-    let lhs = amount / scale;
-    let rhs = format!("{:0width$}", (amount % scale), width = decimals as usize).replace('-', ""); // remove negative sign from rhs
-    format!("{}.{}", lhs, rhs.trim_end_matches('0'))
 }

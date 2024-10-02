@@ -83,7 +83,7 @@ pub(crate) fn process_claim_authority<'a, 'info>(
     Ok(())
 }
 
-/// The authority can be changed to a successor, but the successor must explicitly claim the 
+/// The authority can be changed to a successor, but the successor must explicitly claim the
 /// authority from the previous market authority
 pub(crate) fn process_name_successor<'a, 'info>(
     _program_id: &Pubkey,
@@ -164,12 +164,10 @@ pub(crate) fn process_change_market_status<'a, 'info>(
             **market_info.lamports.borrow_mut() = 0;
             market_info.assign(&system_program::id());
             market_info.realloc(0, false)?;
-            phoenix_log!("Market has been removed");
         }
         // In all other cases, we simply update the status of the market
         _ => {
             market_info.get_header_mut()?.status = next_state as u64;
-            phoenix_log!("Market status changed to {}", next_state);
         }
     }
     Ok(())

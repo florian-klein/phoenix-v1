@@ -146,10 +146,8 @@ pub(crate) fn process_swap<'a, 'info>(
 ) -> ProgramResult {
     sol_log_compute_units();
     let new_order_context = NewOrderContext::load_cross_only(market_context, accounts, false)?;
-    let mut order_packet = decode_order_packet(data).ok_or_else(|| {
-        phoenix_log!("Failed to decode order packet");
-        ProgramError::InvalidInstructionData
-    })?;
+    let mut order_packet =
+        decode_order_packet(data).ok_or_else(|| ProgramError::InvalidInstructionData)?;
     assert_with_msg(
         new_order_context.seat_option.is_none(),
         ProgramError::InvalidInstructionData,
@@ -187,10 +185,8 @@ pub(crate) fn process_swap_with_free_funds<'a, 'info>(
     record_event_fn: &mut dyn FnMut(MarketEvent<Pubkey>),
 ) -> ProgramResult {
     let new_order_context = NewOrderContext::load_cross_only(market_context, accounts, true)?;
-    let mut order_packet = decode_order_packet(data).ok_or_else(|| {
-        phoenix_log!("Failed to decode order packet");
-        ProgramError::InvalidInstructionData
-    })?;
+    let mut order_packet =
+        decode_order_packet(data).ok_or_else(|| ProgramError::InvalidInstructionData)?;
     assert_with_msg(
         new_order_context.seat_option.is_some(),
         ProgramError::InvalidInstructionData,
@@ -227,10 +223,8 @@ pub(crate) fn process_place_limit_order<'a, 'info>(
     order_ids: &mut Vec<FIFOOrderId>,
 ) -> ProgramResult {
     let new_order_context = NewOrderContext::load_post_allowed(market_context, accounts, false)?;
-    let mut order_packet = decode_order_packet(data).ok_or_else(|| {
-        phoenix_log!("Failed to decode order packet");
-        ProgramError::InvalidInstructionData
-    })?;
+    let mut order_packet =
+        decode_order_packet(data).ok_or_else(|| ProgramError::InvalidInstructionData)?;
     assert_with_msg(
         new_order_context.seat_option.is_some(),
         ProgramError::InvalidInstructionData,
@@ -268,10 +262,8 @@ pub(crate) fn process_place_limit_order_with_free_funds<'a, 'info>(
     order_ids: &mut Vec<FIFOOrderId>,
 ) -> ProgramResult {
     let new_order_context = NewOrderContext::load_post_allowed(market_context, accounts, true)?;
-    let mut order_packet = decode_order_packet(data).ok_or_else(|| {
-        phoenix_log!("Failed to decode order packet");
-        ProgramError::InvalidInstructionData
-    })?;
+    let mut order_packet =
+        decode_order_packet(data).ok_or_else(|| ProgramError::InvalidInstructionData)?;
     assert_with_msg(
         new_order_context.seat_option.is_some(),
         ProgramError::InvalidInstructionData,
@@ -488,12 +480,12 @@ fn process_new_order<'a, 'info>(
             }
         } else {
             // Should never be reached as the account loading logic should fail
-            phoenix_log!("WARNING: Vault context was not provided");
+
             return Err(PhoenixError::NewOrderError.into());
         }
     } else if quote_atoms_to_deposit > QuoteAtoms::ZERO || base_atoms_to_deposit > BaseAtoms::ZERO {
         // Should never execute as the matching engine should return None in this case
-        phoenix_log!("WARNING: Deposited amount of funds were insufficient to execute the order");
+
         return Err(ProgramError::InsufficientFunds);
     }
 
@@ -534,7 +526,6 @@ fn process_multiple_new_orders<'a, 'info>(
         .unwrap_or(u64::MAX);
 
     if highest_bid >= lowest_ask {
-        phoenix_log!("Invalid input. MultipleOrderPacket contains crossing bids and asks");
         return Err(ProgramError::InvalidArgument.into());
     }
 
@@ -688,11 +679,10 @@ fn process_multiple_new_orders<'a, 'info>(
             }
         } else {
             // Should never be reached as the account loading logic should fail
-            phoenix_log!("WARNING: Vault context was not provided");
+
             return Err(PhoenixError::NewOrderError.into());
         }
     } else if base_lots_to_deposit > BaseLots::ZERO || quote_lots_to_deposit > QuoteLots::ZERO {
-        phoenix_log!("Deposited amount of funds were insufficient to execute the order");
         return Err(ProgramError::InsufficientFunds);
     }
 
@@ -739,11 +729,6 @@ fn order_packet_has_sufficient_funds<'a>(
     match order_packet.side() {
         Side::Ask => {
             if base_lots_available < order_packet.num_base_lots() {
-                phoenix_log!(
-                    "Insufficient funds to place order: {} base lots available, {} base lots required",
-                    base_lots_available,
-                    order_packet.num_base_lots()
-                );
                 return false;
             }
         }
@@ -754,11 +739,6 @@ fn order_packet_has_sufficient_funds<'a>(
                 / market_wrapper.inner.get_base_lots_per_base_unit();
 
             if quote_lots_available < quote_lots_required {
-                phoenix_log!(
-                    "Insufficient funds to place order: {} quote lots available, {} quote lots required",
-                    quote_lots_available,
-                    quote_lots_required
-                );
                 return false;
             }
         }

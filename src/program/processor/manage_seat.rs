@@ -110,7 +110,6 @@ pub(crate) fn process_change_seat_status<'a, 'info>(
     let mut seat = seat_info.load_mut()?;
     let current_status = SeatApprovalStatus::from(seat.approval_status);
     if current_status == new_status {
-        phoenix_log!("Seat status is unchanged");
         return Ok(());
     }
     match (current_status, new_status) {
@@ -135,11 +134,6 @@ pub(crate) fn process_change_seat_status<'a, 'info>(
             seat.approval_status = SeatApprovalStatus::Retired as u64;
         }
         _ => {
-            phoenix_log!(
-                "Invalid seat status transition from {} to {}",
-                current_status,
-                new_status
-            );
             return Err(ProgramError::InvalidInstructionData);
         }
     }

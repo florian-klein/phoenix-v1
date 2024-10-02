@@ -71,7 +71,6 @@ pub(crate) fn dispatch_market_mut<'a>(
         (4096, 4096, 8193) => fifo_market_mut!(4096, 4096, 8193, bytes),
         (4096, 4096, 8321) => fifo_market_mut!(4096, 4096, 8321, bytes),
         _ => {
-            phoenix_log!("Invalid parameters for market");
             return Err(PhoenixError::InvalidMarketParameters.into());
         }
     };
@@ -120,7 +119,6 @@ fn dispatch_market<'a>(
         (4096, 4096, 8193) => fifo_market!(4096, 4096, 8193, bytes),
         (4096, 4096, 8321) => fifo_market!(4096, 4096, 8321, bytes),
         _ => {
-            phoenix_log!("Invalid parameters for market");
             return Err(PhoenixError::InvalidMarketParameters.into());
         }
     };
@@ -152,7 +150,6 @@ pub fn get_market_size(market_size_params: &MarketSizeParams) -> Result<usize, P
         (4096, 4096, 8193) => fifo_market_size!(4096, 4096, 8193),
         (4096, 4096, 8321) => fifo_market_size!(4096, 4096, 8321),
         _ => {
-            phoenix_log!("Invalid parameters for market");
             return Err(PhoenixError::InvalidMarketParameters.into());
         }
     };

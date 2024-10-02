@@ -16,7 +16,6 @@ use crate::state::matching_engine_response::MatchingEngineResponse;
 use crate::state::*;
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
-use phoenix_log;
 use sokoban::node_allocator::{NodeAllocatorMap, OrderedNodeAllocatorMap, ZeroCopy, SENTINEL};
 use sokoban::{FromSlice, RedBlackTree};
 use std::fmt::Debug;
@@ -708,7 +707,7 @@ impl<
                 } else {
                     // If the order is empty, we can remove it from the tree
                     // This case should never occur in v1
-                    phoenix_log!("WARNING: Empty order found in check_for_cross");
+
                     self.get_book_mut(side.opposite()).remove(&o_id);
                 }
             } else {
@@ -764,11 +763,9 @@ impl<
         get_clock_fn: &mut dyn FnMut() -> (u64, u64),
     ) -> Option<(Option<FIFOOrderId>, MatchingEngineResponse)> {
         if self.order_sequence_number == 0 {
-            phoenix_log!("Market is uninitialized");
             return None;
         }
         if self.order_sequence_number == u64::MAX >> 1 {
-            phoenix_log!("Sequence number exceeded maximum");
             return None;
         }
 
@@ -776,7 +773,6 @@ impl<
         match side {
             Side::Bid => {
                 if order_packet.get_price_in_ticks() == Ticks::ZERO {
-                    phoenix_log!("Bid price is too low");
                     return None;
                 }
             }
@@ -794,7 +790,6 @@ impl<
         };
 
         if order_packet.num_base_lots() == 0 && order_packet.num_quote_lots() == 0 {
-            phoenix_log!("Either num_base_lots or num_quote_lots must be nonzero");
             return None;
         }
 
@@ -808,14 +803,6 @@ impl<
             if num_base_lots > BaseLots::ZERO && num_quote_lots > QuoteLots::ZERO
                 || num_base_lots == BaseLots::ZERO && num_quote_lots == QuoteLots::ZERO
             {
-                phoenix_log!(
-                    "Invalid IOC params.
-                        Exactly one of num_base_lots or num_quote_lots must be nonzero.
-                        num_quote_lots: {},
-                        num_base_lots: {}",
-                    num_quote_lots,
-                    num_base_lots
-                );
                 return None;
             }
         }
@@ -823,7 +810,6 @@ impl<
         let (current_slot, current_unix_timestamp) = get_clock_fn();
 
         if order_packet.is_expired(current_slot, current_unix_timestamp) {
-            phoenix_log!("Order parameters include a last_valid_slot or last_valid_unix_timestamp_in_seconds in the past, skipping matching and posting");
             // Do not fail the transaction if the order is expired, but do not place or match the order
             return Some((None, MatchingEngineResponse::default()));
         }
@@ -843,13 +829,11 @@ impl<
                 record_event_fn,
             ) {
                 if *reject_post_only {
-                    phoenix_log!("PostOnly order crosses the book - order rejected");
                     return None;
                 } else {
                     match side {
                         Side::Bid => {
                             if ticks <= Ticks::ONE {
-                                phoenix_log!("PostOnly order crosses the book and can not be amended to a valid price - order rejected");
                                 return None;
                             }
                             *price_in_ticks = ticks - Ticks::ONE;
@@ -858,7 +842,6 @@ impl<
                             *price_in_ticks = ticks + Ticks::ONE;
                         }
                     }
-                    phoenix_log!("PostOnly order crosses the book - order amended");
                 }
             }
 
@@ -912,13 +895,7 @@ impl<
                     current_slot,
                     current_unix_timestamp,
                 )
-                .map_or_else(
-                    || {
-                        phoenix_log!("Encountered error matching order");
-                        None
-                    },
-                    Some,
-                )?;
+                .map_or_else(|| None, Some)?;
             // matched_adjusted_quote_lots is rounded down to the nearest tick for buys and up for
             // sells to yield a whole number of matched_quote_lots.
             let matched_quote_lots = match side {
@@ -970,17 +947,6 @@ impl<
             if matching_engine_response.num_base_lots() < min_base_lots_to_fill
                 || matching_engine_response.num_quote_lots() < min_quote_lots_to_fill
             {
-                phoenix_log!(
-                    "IOC order failed to meet minimum fill requirements. 
-                        min_base_lots_to_fill: {},
-                        min_quote_lots_to_fill: {},
-                        matched_base_lots: {},
-                        matched_quote_lots: {}",
-                    min_base_lots_to_fill,
-                    min_quote_lots_to_fill,
-                    matching_engine_response.num_base_lots(),
-                    matching_engine_response.num_quote_lots(),
-                );
                 return None;
             }
         } else {
@@ -1024,19 +990,12 @@ impl<
                 // Evict order from the book if it is at capacity
                 placed_order_id = Some(order_id);
                 if book_full {
-                    phoenix_log!("Book is full. Evicting order");
                     self.evict_least_aggressive_order(side, record_event_fn, &order_id);
                 }
                 // Add new order to the book
                 self.get_book_mut(side)
                     .insert(order_id, resting_order)
-                    .map_or_else(
-                        || {
-                            phoenix_log!("Failed to insert order into book");
-                            None
-                        },
-                        Some,
-                    )?;
+                    .map_or_else(|| None, Some)?;
                 // These constants need to be copied because we mutably borrow below
                 let tick_size_in_quote_lots_per_base_unit =
                     self.tick_size_in_quote_lots_per_base_unit;
@@ -1129,13 +1088,11 @@ impl<
 
                 // Check if trader has enough deposited funds to process the order
                 if !matching_engine_response.verify_no_deposit() {
-                    phoenix_log!("Trader does not have enough deposited funds to process order");
                     return None;
                 }
 
                 // Check that the matching engine response does not withdraw any base or quote lots
                 if !matching_engine_response.verify_no_withdrawal() {
-                    phoenix_log!("Matching engine response withdraws base or quote lots");
                     return None;
                 }
             }
@@ -1158,7 +1115,6 @@ impl<
                 Side::Bid => fifo_order_id.price_in_ticks >= placed_order_id.price_in_ticks,
                 Side::Ask => fifo_order_id.price_in_ticks <= placed_order_id.price_in_ticks,
             } {
-                phoenix_log!("New order is not aggressive enough to evict an existing order");
                 return None;
             }
             self.get_book_mut(side).remove(&fifo_order_id)?;
@@ -1226,7 +1182,6 @@ impl<
                         quote,
                     )
                 } else {
-                    phoenix_log!("Book is empty");
                     break;
                 };
                 // If the order no longer crosses the limit price (based on limit_price_in_ticks), stop matching
@@ -1400,9 +1355,6 @@ impl<
                     base_lots_remaining: order_remaining_base_lots,
                 });
             } else if !inflight_order.should_terminate {
-                phoenix_log!(
-                    "WARNING: should_terminate should always be true if matched_base_lots is zero"
-                );
             }
 
             let base_lots_per_base_unit = self.base_lots_per_base_unit;

@@ -187,15 +187,6 @@ pub(crate) trait WritableMarket<
         self.get_trader_index(trader)
     }
 
-    fn try_remove_trader_state(&mut self, trader: &MarketTraderId) -> Option<()> {
-        let registered_traders = self.get_registered_traders_mut();
-        let trader_state = registered_traders.get(trader)?;
-        if *trader_state == TraderState::default() {
-            registered_traders.remove(trader)?;
-        }
-        Some(())
-    }
-
     fn get_book_mut(
         &mut self,
         side: Side,
@@ -208,24 +199,6 @@ pub(crate) trait WritableMarket<
         record_event_fn: &mut dyn FnMut(MarketEvent<MarketTraderId>),
         get_clock_fn: &mut dyn FnMut() -> (u64, u64),
     ) -> Option<(Option<MarketOrderId>, MatchingEngineResponse)>;
-
-    fn cancel_order(
-        &mut self,
-        trader_id: &MarketTraderId,
-        order_id: &MarketOrderId,
-        side: Side,
-        claim_funds: bool,
-        record_event_fn: &mut dyn FnMut(MarketEvent<MarketTraderId>),
-    ) -> Option<MatchingEngineResponse> {
-        self.reduce_order(
-            trader_id,
-            order_id,
-            side,
-            None,
-            claim_funds,
-            record_event_fn,
-        )
-    }
 
     fn reduce_order(
         &mut self,
@@ -263,14 +236,6 @@ pub(crate) trait WritableMarket<
         claim_funds: bool,
         record_event_fn: &mut dyn FnMut(MarketEvent<MarketTraderId>),
     ) -> Option<MatchingEngineResponse>;
-
-    fn claim_all_funds(
-        &mut self,
-        trader: &MarketTraderId,
-        allow_seat_eviction: bool,
-    ) -> Option<MatchingEngineResponse> {
-        self.claim_funds(trader, None, None, allow_seat_eviction)
-    }
 
     fn claim_funds(
         &mut self,

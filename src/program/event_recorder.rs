@@ -59,6 +59,7 @@ const MAX_EVENT_SIZE: usize = 67;
 /// CPI to the log instruction to log the events and drain the `event_buffer`.
 ///
 /// This enables the program to only have to allocate heap memory once per instruction
+#[allow(dead_code)]
 pub(crate) struct EventRecorder<'info> {
     phoenix_program: AccountInfo<'info>,
     log_authority: AccountInfo<'info>,
@@ -181,7 +182,7 @@ impl<'info> EventRecorder<'info> {
     ) -> ProgramResult {
         if let Some(err) = self.error_code {
             // This should never happen because the program should have terminiated in `self.add_event`
-            phoenix_log!("ERROR: Event recorder failed to record events: {}", err);
+
             return Err(err.into());
         }
         if market_info.data_is_empty() {
@@ -214,14 +215,7 @@ pub(crate) struct EventStateTracker {
 }
 
 impl EventStateTracker {
-    pub(crate) fn print_status(&self) {
-        phoenix_log!(
-            "Sending batch {} with header and {} market events, total events sent: {}",
-            self.batch_index + 1,
-            self.get_batch_size(),
-            self.events_added,
-        );
-    }
+    pub(crate) fn print_status(&self) {}
 
     pub(crate) fn get_batch_size(&self) -> u16 {
         self.events_added - self.events_emitted
