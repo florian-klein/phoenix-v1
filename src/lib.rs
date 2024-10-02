@@ -38,22 +38,6 @@ use solana_program::{
 };
 use state::markets::MarketEvent;
 
-#[cfg(not(feature = "no-entrypoint"))]
-use solana_security_txt::security_txt;
-
-#[cfg(not(feature = "no-entrypoint"))]
-security_txt! {
-    // Required fields
-    name: "Phoenix V1",
-    project_url: "https://ellipsislabs.xyz/",
-    contacts: "email:maintainers@ellipsislabs.xyz",
-    policy: "https://github.com/Ellipsis-Labs/phoenix-v1/blob/master/SECURITY.md",
-    // Optional Fields
-    preferred_languages: "en",
-    source_code: "https://github.com/Ellipsis-Labs/phoenix-v1",
-    auditors: "contact@osec.io"
-}
-
 declare_id!("PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY");
 
 /// This is a static PDA with seeds: [b"log"]
