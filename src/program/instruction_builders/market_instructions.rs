@@ -62,7 +62,7 @@ pub fn create_new_order_instruction_with_custom_token_accounts(
             ],
             data: [
                 PhoenixInstruction::Swap.to_vec(),
-                order_packet.try_to_vec().unwrap(),
+                borsh::to_vec(&order_packet).unwrap(),
             ]
             .concat(),
         }
@@ -84,7 +84,7 @@ pub fn create_new_order_instruction_with_custom_token_accounts(
             ],
             data: [
                 PhoenixInstruction::PlaceLimitOrder.to_vec(),
-                order_packet.try_to_vec().unwrap(),
+                borsh::to_vec(&order_packet).unwrap(),
             ]
             .concat(),
         }
@@ -112,7 +112,7 @@ pub fn create_new_order_with_free_funds_instruction(
             } else {
                 PhoenixInstruction::PlaceLimitOrderWithFreeFunds.to_vec()
             },
-            order_packet.try_to_vec().unwrap(),
+            borsh::to_vec(&order_packet).unwrap(),
         ]
         .concat(),
     }
@@ -166,7 +166,7 @@ pub fn create_new_multiple_order_instruction_with_custom_token_accounts(
         ],
         data: [
             PhoenixInstruction::PlaceMultiplePostOnlyOrders.to_vec(),
-            multiple_order_packet.try_to_vec().unwrap(),
+            borsh::to_vec(&multiple_order_packet).unwrap(),
         ]
         .concat(),
     }
@@ -189,7 +189,7 @@ pub fn create_new_multiple_order_with_free_funds_instruction(
         ],
         data: [
             PhoenixInstruction::PlaceMultiplePostOnlyOrdersWithFreeFunds.to_vec(),
-            multiple_order_packet.try_to_vec().unwrap(),
+            borsh::to_vec(&multiple_order_packet).unwrap(),
         ]
         .concat(),
     }
@@ -226,7 +226,7 @@ pub fn create_cancel_up_to_with_free_funds_instruction(
         ],
         data: [
             PhoenixInstruction::CancelUpToWithFreeFunds.to_vec(),
-            params.try_to_vec().unwrap(),
+            borsh::to_vec(&params).unwrap(),
         ]
         .concat(),
     }
@@ -247,7 +247,7 @@ pub fn create_cancel_multiple_orders_by_id_with_free_funds_instruction(
         ],
         data: [
             PhoenixInstruction::CancelMultipleOrdersByIdWithFreeFunds.to_vec(),
-            params.try_to_vec().unwrap(),
+            borsh::to_vec(&params).unwrap(),
         ]
         .concat(),
     }
@@ -268,7 +268,7 @@ pub fn create_reduce_order_with_free_funds_instruction(
         ],
         data: [
             PhoenixInstruction::ReduceOrderWithFreeFunds.to_vec(),
-            params.try_to_vec().unwrap(),
+            borsh::to_vec(&params).unwrap(),
         ]
         .concat(),
     }
@@ -309,7 +309,7 @@ pub fn create_deposit_funds_instruction_with_custom_token_accounts(
 ) -> Instruction {
     let (base_vault, _) = get_vault_address(market, base);
     let (quote_vault, _) = get_vault_address(market, quote);
-    let ix_data = params.try_to_vec().unwrap();
+    let ix_data = borsh::to_vec(&params).unwrap();
     Instruction {
         program_id: crate::id(),
         accounts: vec![
@@ -342,7 +342,7 @@ fn _phoenix_instruction_template<T: BorshSerialize>(
     let (base_vault, _) = get_vault_address(market, base);
     let (quote_vault, _) = get_vault_address(market, quote);
     let ix_data = match params {
-        Some(i) => i.try_to_vec().unwrap(),
+        Some(i) => borsh::to_vec(&i).unwrap(),
         None => vec![],
     };
     Instruction {

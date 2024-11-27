@@ -4,7 +4,6 @@ use crate::program::{
     get_market_size, processor::*, MarketHeader, MarketSizeParams, PhoenixInstruction,
 };
 use crate::state::Side;
-use borsh::BorshSerialize;
 use solana_program::{
     instruction::{AccountMeta, Instruction},
     program_error::ProgramError,
@@ -126,7 +125,7 @@ pub fn create_initialize_market_instruction(
         ],
         data: [
             PhoenixInstruction::InitializeMarket.to_vec(),
-            InitializeParams {
+            borsh::to_vec(&InitializeParams {
                 market_size_params: header_params,
                 num_quote_lots_per_quote_unit,
                 num_base_lots_per_base_unit,
@@ -134,8 +133,7 @@ pub fn create_initialize_market_instruction(
                 taker_fee_bps,
                 fee_collector: *fee_collector,
                 raw_base_units_per_base_unit,
-            }
-            .try_to_vec()
+            })
             .unwrap(),
         ]
         .concat(),
@@ -201,7 +199,7 @@ pub fn create_name_successor_instruction(
         ],
         data: [
             PhoenixInstruction::NameSuccessor.to_vec(),
-            successor.try_to_vec().unwrap(),
+            borsh::to_vec(&successor).unwrap(),
         ]
         .concat(),
     }
@@ -222,7 +220,7 @@ pub fn create_change_market_status_instruction(
         ],
         data: [
             PhoenixInstruction::ChangeMarketStatus.to_vec(),
-            status.try_to_vec().unwrap(),
+            borsh::to_vec(&status).unwrap(),
         ]
         .concat(),
     }
@@ -269,7 +267,7 @@ pub fn create_change_seat_status_instruction(
         ],
         data: [
             PhoenixInstruction::ChangeSeatStatus.to_vec(),
-            status.try_to_vec().unwrap(),
+            borsh::to_vec(&status).unwrap(),
         ]
         .concat(),
     }
@@ -402,13 +400,12 @@ fn create_force_cancel_orders_instruction(
         ],
         data: [
             PhoenixInstruction::ForceCancelOrders.to_vec(),
-            CancelUpToParams {
+            borsh::to_vec(&CancelUpToParams {
                 side,
                 tick_limit: None,
                 num_orders_to_cancel: None,
                 num_orders_to_search: None,
-            }
-            .try_to_vec()
+            })
             .unwrap(),
         ]
         .concat(),

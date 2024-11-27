@@ -23,12 +23,11 @@ use std::str::FromStr;
 
 use crate::program::processor::*;
 
-use borsh::BorshSerialize;
 // You need to import Pubkey prior to using the declare_id macro
 use solana_program::{program::set_return_data, pubkey::Pubkey};
 
 pub fn id() -> Pubkey {
-    return Pubkey::from_str("PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY").unwrap();
+    Pubkey::from_str("PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY").unwrap()
 }
 
 use program::{
@@ -285,7 +284,7 @@ pub fn process_instruction(
     // We set the order ids at the end of the instruction because the return data gets cleared after
     // every CPI call.
     if !order_ids.is_empty() {
-        set_return_data(order_ids.try_to_vec()?.as_ref());
+        set_return_data(&borsh::to_vec(&order_ids)?);
     }
     Ok(())
 }
